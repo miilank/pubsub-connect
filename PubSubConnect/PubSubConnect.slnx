@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PubSubConnect.Client/PubSubConnect.Client.csproj" />
+  <Project Path="PubSubConnect.Server/PubSubConnect.Server.csproj" />
+</Solution>

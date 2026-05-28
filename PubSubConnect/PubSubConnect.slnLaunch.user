@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "PubSubConnect.Server\\PubSubConnect.Server.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "PubSubConnect.Client\\PubSubConnect.Client.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
