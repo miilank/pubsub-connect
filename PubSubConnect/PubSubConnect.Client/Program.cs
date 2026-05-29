@@ -9,8 +9,11 @@ string city = ReadLettersOnly("Unesite grad: ");
 int age = ReadPositiveInt("Unesite godine: ");
 string phone = ReadPhone("Unesite broj telefona: ");
 
+int pendingLetter = 0;
+
 connection.On<LetterDto>("ReceiveLetter", letter =>
 {
+    Interlocked.Exchange(ref pendingLetter, 1);
     Console.WriteLine("\n--- Primili ste pismo ---");
     Console.WriteLine($"Od:      {letter.SenderUsername}");
     Console.WriteLine($"Grad:    {letter.SenderCity}");
@@ -34,20 +37,32 @@ while (true)
     if (input.StartsWith("/block"))
     {
         string toBlock = input.Length > 6 ? input.Substring(6).Trim() : string.Empty;
-        if (!string.IsNullOrEmpty(toBlock))
+
+        if (string.IsNullOrEmpty(toBlock))
+        {
+            Console.WriteLine("Niste naveli korisnika za blokiranje.");
+        }
+        else if (string.Equals(toBlock, username, StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine("Ne mozete blokirati sami sebe.");
+        }
+        else
         {
             await connection.InvokeAsync("BlockUser", toBlock);
             Console.WriteLine($"Korisnik '{toBlock}' je blokiran.");
         }
-        else
-        {
-            Console.WriteLine("Niste naveli korisnika za blokiranje.");
-        }
     }
     else if (string.IsNullOrEmpty(input))
     {
-        await connection.InvokeAsync("ConfirmReceipt");
-        Console.WriteLine("Prijem potvrdjen.");
+        if (Interlocked.CompareExchange(ref pendingLetter, 0, 1) == 1)
+        {
+            await connection.InvokeAsync("ConfirmReceipt");
+            Console.WriteLine("Prijem potvrdjen.");
+        }
+        else
+        {
+            Console.WriteLine("Nemate pismo za potvrdu.");
+        }
     }
 }
 
