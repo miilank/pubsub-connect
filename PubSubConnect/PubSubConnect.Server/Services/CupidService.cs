@@ -113,10 +113,13 @@ namespace PubSubConnect.Server.Services
         }
 #pragma warning restore SYSLIB0023
 
-        public void RegisterPerson(string connectionId, string username, string city, int age, string phone)
+        public bool RegisterPerson(string connectionId, string username, string city, int age, string phone)
         {
             lock (_lock)
             {
+                if (_persons.Any(p => p.Username.Equals(username, StringComparison.OrdinalIgnoreCase)))
+                    return false;
+
                 _persons.Add(new Person
                 {
                     ConnectionId = connectionId,
@@ -125,6 +128,7 @@ namespace PubSubConnect.Server.Services
                     Age = age,
                     Phone = phone
                 });
+                return true;
             }
         }
 

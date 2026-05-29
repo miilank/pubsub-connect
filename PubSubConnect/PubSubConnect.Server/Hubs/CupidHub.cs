@@ -12,10 +12,9 @@ namespace PubSubConnect.Server.Hubs
             _cupidService = cupidService;
         }
 
-        public Task InitSinglePerson(string username, string city, int age, string phone)
+        public Task<bool> InitSinglePerson(string username, string city, int age, string phone)
         {
-            _cupidService.RegisterPerson(Context.ConnectionId, username, city, age, phone);
-            return Task.CompletedTask;
+            return Task.FromResult(_cupidService.RegisterPerson(Context.ConnectionId, username, city, age, phone));
         }
 
         public Task ConfirmReceipt()

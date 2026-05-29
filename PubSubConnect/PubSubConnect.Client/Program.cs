@@ -25,7 +25,13 @@ connection.On<LetterDto>("ReceiveLetter", letter =>
 });
 
 await connection.StartAsync();
-await connection.InvokeAsync("InitSinglePerson", username, city, age, phone);
+bool registered = await connection.InvokeAsync<bool>("InitSinglePerson", username, city, age, phone);
+while (!registered)
+{
+    Console.WriteLine($"Username '{username}' je vec zauzet. Probajte drugi.");
+    username = ReadText("Unesite username: ");
+    registered = await connection.InvokeAsync<bool>("InitSinglePerson", username, city, age, phone);
+}
 
 Console.WriteLine("Prijavljeni ste. Cekajte pisma...");
 Console.WriteLine("Komanda za blokiranje: /block <username>");
