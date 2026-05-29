@@ -5,15 +5,12 @@ var connection = new HubConnectionBuilder()
     .Build();
 
 string username = ReadText("Unesite username: ");
-string city = ReadText("Unesite grad: ");
+string city = ReadLettersOnly("Unesite grad: ");
 int age = ReadPositiveInt("Unesite godine: ");
-string phone = ReadText("Unesite broj telefona: ");
-
-int pendingLetter = 0;
+string phone = ReadPhone("Unesite broj telefona: ");
 
 connection.On<LetterDto>("ReceiveLetter", letter =>
 {
-    Interlocked.Exchange(ref pendingLetter, 1);
     Console.WriteLine("\n--- Primili ste pismo ---");
     Console.WriteLine($"Od:      {letter.SenderUsername}");
     Console.WriteLine($"Grad:    {letter.SenderCity}");
@@ -34,16 +31,9 @@ while (true)
 {
     string input = Console.ReadLine() ?? string.Empty;
 
-    if (string.IsNullOrEmpty(input) && Interlocked.CompareExchange(ref pendingLetter, 0, 1) == 1)
+    if (input.StartsWith("/block"))
     {
-        await connection.InvokeAsync("ConfirmReceipt");
-        Console.WriteLine("Prijem potvrdjen.");
-        continue;
-    }
-
-    if (input.StartsWith("/block "))
-    {
-        string toBlock = input.Substring(7).Trim();
+        string toBlock = input.Length > 6 ? input.Substring(6).Trim() : string.Empty;
         if (!string.IsNullOrEmpty(toBlock))
         {
             await connection.InvokeAsync("BlockUser", toBlock);
@@ -53,6 +43,11 @@ while (true)
         {
             Console.WriteLine("Niste naveli korisnika za blokiranje.");
         }
+    }
+    else if (string.IsNullOrEmpty(input))
+    {
+        await connection.InvokeAsync("ConfirmReceipt");
+        Console.WriteLine("Prijem potvrdjen.");
     }
 }
 
@@ -99,6 +94,52 @@ static int ReadPositiveInt(string prompt)
         }
 
         return result;
+    }
+}
+
+static string ReadLettersOnly(string prompt)
+{
+    while (true)
+    {
+        Console.Write(prompt);
+        string value = Console.ReadLine() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            Console.WriteLine("Polje ne sme biti prazno.");
+            continue;
+        }
+
+        if (!value.All(c => char.IsLetter(c) || char.IsWhiteSpace(c)))
+        {
+            Console.WriteLine("Grad sme da sadrzi samo slova.");
+            continue;
+        }
+
+        return value;
+    }
+}
+
+static string ReadPhone(string prompt)
+{
+    while (true)
+    {
+        Console.Write(prompt);
+        string value = Console.ReadLine() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            Console.WriteLine("Polje ne sme biti prazno.");
+            continue;
+        }
+
+        if (!value.All(c => char.IsDigit(c) || c == '+' || c == ' '))
+        {
+            Console.WriteLine("Broj telefona sme da sadrzi samo cifre, plus i razmak.");
+            continue;
+        }
+
+        return value;
     }
 }
 

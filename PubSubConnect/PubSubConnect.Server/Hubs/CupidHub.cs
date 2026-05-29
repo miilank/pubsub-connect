@@ -3,7 +3,7 @@ using PubSubConnect.Server.Services;
 
 namespace PubSubConnect.Server.Hubs
 {
-    public class CupidHub : Hub
+    public class CupidHub : Hub<ICupidClient>
     {
         private readonly ICupidService _cupidService;
 

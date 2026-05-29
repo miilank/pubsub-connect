@@ -5,12 +5,11 @@ using System.Security.Cryptography;
 
 namespace PubSubConnect.Server.Services
 {
-    public class CupidService : ICupidService, IHostedService, IDisposable
+    public class CupidService : BackgroundService, ICupidService
     {
-        private readonly IHubContext<CupidHub> _hubContext;
+        private readonly IHubContext<CupidHub, ICupidClient> _hubContext;
         private readonly List<Person> _persons = new();
         private readonly object _lock = new();
-        private Timer? _timer;
 
         private static readonly string[] Messages =
         {
@@ -19,21 +18,26 @@ namespace PubSubConnect.Server.Services
             "Nisam zainteresovan/a za upoznavanje."
         };
 
-        public CupidService(IHubContext<CupidHub> hubContext)
+        public CupidService(IHubContext<CupidHub, ICupidClient> hubContext)
         {
             _hubContext = hubContext;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _timer = new Timer(_ => _ = SendLettersAsync(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-            return Task.CompletedTask;
-        }
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _timer?.Change(Timeout.Infinite, 0);
-            return Task.CompletedTask;
+                await SendLettersAsync();
+            }
         }
 
         private async Task SendLettersAsync()
@@ -79,7 +83,7 @@ namespace PubSubConnect.Server.Services
             foreach (var (recipient, letter) in toSend)
             {
                 await _hubContext.Clients.Client(recipient.ConnectionId)
-                    .SendAsync("ReceiveLetter", letter);
+                    .ReceiveLetter(letter);
             }
         }
 
@@ -98,7 +102,7 @@ namespace PubSubConnect.Server.Services
             return score;
         }
 
-        #pragma warning disable SYSLIB0023
+#pragma warning disable SYSLIB0023
         private int GetRandomInt(int min, int max)
         {
             using var rng = new RNGCryptoServiceProvider();
@@ -107,7 +111,7 @@ namespace PubSubConnect.Server.Services
             int value = BitConverter.ToInt32(bytes, 0) & int.MaxValue;
             return min + (value % (max - min));
         }
-        #pragma warning restore SYSLIB0023
+#pragma warning restore SYSLIB0023
 
         public void RegisterPerson(string connectionId, string username, string city, int age, string phone)
         {
@@ -149,11 +153,6 @@ namespace PubSubConnect.Server.Services
             {
                 _persons.RemoveAll(p => p.ConnectionId == connectionId);
             }
-        }
-
-        public void Dispose()
-        {
-            _timer?.Dispose();
         }
     }
 }
