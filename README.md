@@ -6,7 +6,7 @@ Server izlaže jedan SignalR hub za osobe koje traže partnera, dok logiku kupid
 
 ### Arhitektura i komunikacija
 
-Sistem se sastoji od jednog **ASP.NET Core** servera i više konzolnih klijenata, koji komuniciraju preko **SignalR** hub-a - dvosmerne, real-time komunikacije preko SignalR-a.
+Sistem se sastoji od jednog ASP.NET Core servera i više konzolnih klijenata, koji komuniciraju preko SignalR hub-a - dvosmerne, real-time komunikacije.
 
 ### Kako sistem radi
 
