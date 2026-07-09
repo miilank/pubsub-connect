@@ -6,7 +6,7 @@ Server izlaže jedan SignalR hub za osobe koje traže partnera, dok logiku kupid
 
 ### Arhitektura i komunikacija
 
-Sistem se sastoji od jednog **ASP.NET Core** servera i više konzolnih klijenata, koji komuniciraju preko **SignalR** hub-a - dvosmerne, real-time komunikacije preko WebSocket-a.
+Sistem se sastoji od jednog **ASP.NET Core** servera i više konzolnih klijenata, koji komuniciraju preko **SignalR** hub-a - dvosmerne, real-time komunikacije preko SignalR-a.
 
 ### Kako sistem radi
 
@@ -22,4 +22,4 @@ Sistem se sastoji od jednog **ASP.NET Core** servera i više konzolnih klijenata
 
 ### Tehnologije
 
-ASP.NET Core, SignalR (WebSocket hub), C#, konzolni SignalR klijent.
+ASP.NET Core, SignalR, C#, konzolni SignalR klijent.
